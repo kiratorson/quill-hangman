@@ -1,422 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fall Edition Hangman</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg: #EEF2F6;
-    --card: #FFFFFF;
-    --ink: #232838;
-    --muted: #767F92;
-    --line: #DFE5EC;
-    --coral: #FF8B76;
-    --coral-ink: #7A2C1D;
-    --mint: #7FD9C4;
-    --mint-ink: #144F42;
-    --butter: #FFD873;
-    --peri: #9AA6FF;
-    --peri-ink: #262B6E;
-    --wrong: #C9CFDA;
-    --radius: 18px;
-    --radius-sm: 10px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background: var(--bg);
-    background-image:
-      radial-gradient(circle at 8% 12%, #E3ECF7 0%, transparent 45%),
-      radial-gradient(circle at 92% 88%, #F3E9F7 0%, transparent 40%);
-    color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh;
-  }
-  .wrap{
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 28px 20px 64px;
-  }
-  .wordmark{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom: 22px;
-  }
-  .wordmark span{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size: 17px;
-    letter-spacing: 0.01em;
-  }
-  .wordmark .dot{
-    width:8px;height:8px;border-radius:50%;
-    background: var(--coral);
-    display:inline-block;
-    margin-right:8px;
-    position:relative;
-    top:-1px;
-  }
-  h1.display{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size: clamp(32px, 6vw, 46px);
-    line-height: 1.08;
-    margin: 6px 0 10px;
-  }
-  p.sub{
-    color: var(--muted);
-    font-size: 16px;
-    line-height:1.5;
-    max-width: 46ch;
-    margin: 0 0 30px;
-  }
-  .card{
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: 0 1px 2px rgba(35,40,56,0.04), 0 10px 30px -14px rgba(35,40,56,0.15);
-  }
-  .btn{
-    font-family:'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    border: none;
-    border-radius: 999px;
-    padding: 14px 26px;
-    cursor: pointer;
-    transition: transform .08s ease, box-shadow .15s ease;
-  }
-  .btn:active{ transform: scale(0.98); }
-  .btn-primary{
-    background: var(--ink);
-    color: #fff;
-    width:100%;
-  }
-  .btn-primary:hover{ box-shadow: 0 6px 18px -8px rgba(35,40,56,0.5); }
-  .btn-secondary{
-    background: #F0F2F7;
-    color: var(--ink);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fall Edition Hangman</title>
+  <style>
+    :root {
+      --bg-color: #f4f4f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --accent-color: #6c5ce7;
+      --accent-hover: #5a4bcf;
+      --disabled-color: #dcdde1;
+      --wrong-color: #e74c3c;
+    }
 
-  .play-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom: 10px;
-  }
-  .mistakes-text{
-    font-size: 13px;
-    color: var(--muted);
-    text-align:right;
-    margin-bottom: 18px;
-  }
-  .mistakes-text b{ color: var(--ink); }
-  .lives{
-    display:flex;
-    gap:6px;
-  }
-  .life-dot{
-    width:11px; height:11px;
-    border-radius:50%;
-    background: var(--peri);
-  }
-  .life-dot.used{ background: var(--wrong); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
 
-  .stage-card{
-    background: linear-gradient(180deg, #F4F1FB, #EAF3F1);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 22px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height: 200px;
-  }
+    .game-container {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      padding: 32px;
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-  .tiles{
-    display:flex;
-    flex-wrap:wrap;
-    gap: 8px;
-    justify-content:center;
-    margin: 8px 0 6px;
-  }
-  .tile{
-    width: 38px; height: 46px;
-    border-bottom: 3px solid var(--line);
-    display:flex; align-items:flex-end; justify-content:center;
-    font-family:'Fraunces', serif;
-    font-size: 26px;
-    font-weight:600;
-    padding-bottom: 2px;
-    color: var(--ink);
-  }
-  .tile.gap{ border-bottom:none; width:18px; }
-  .tile.filled{ border-color: var(--peri); }
+    .wordmark {
+      height: 24px;
+      margin-bottom: 8px;
+    }
 
-  .hint-line{
-    text-align:center;
-    font-style: italic;
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 26px;
-  }
+    .header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
 
-  .kb{
-    display:flex;
-    flex-direction:column;
-    gap: 8px;
-    align-items:center;
-    margin-bottom: 8px;
-  }
-  .kb-row{ display:flex; gap: 6px; }
-  .key{
-    min-width: 30px;
-    height: 42px;
-    padding: 0 8px;
-    border-radius: 8px;
-    border: none;
-    background: #F0F2F7;
-    color: var(--ink);
-    font-family:'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    cursor:pointer;
-  }
-  .key:focus-visible{ outline: 2px solid var(--peri); outline-offset:2px; }
-  .key.correct{ background: var(--mint); color: var(--mint-ink); }
-  .key.wrong{ background: var(--wrong); color: #8891A0; }
-  .key:disabled{ cursor:default; }
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
 
-  .overlay{
-    margin-top: 22px;
-    border-radius: var(--radius);
-    padding: 26px;
-    text-align:center;
-  }
-  .overlay.win{ background: #EAFBF5; }
-  .overlay.lose{ background: #F3F1FB; }
-  .overlay h2{
-    font-family:'Fraunces', serif;
-    font-size: 26px;
-    margin: 0 0 8px;
-  }
-  .overlay p{ color: var(--muted); margin: 0 0 18px; font-size:14.5px; }
-  .overlay .btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+    }
 
-  @media (max-width:480px){
-    .tile{ width:30px; height:40px; font-size:20px; }
-    .key{ min-width:26px; height:38px; padding:0 6px; font-size:12.5px; }
-  }
+    .mistakes {
+      font-weight: 600;
+      font-size: 14px;
+      color: #666;
+    }
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation: none !important; transition: none !important; }
-  }
-</style>
+    .stage-container {
+      width: 100%;
+      height: 200px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .stage-image {
+      max-height: 80%;
+      max-width: 80%;
+      object-fit: contain;
+    }
+
+    .word-display {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      min-height: 40px;
+    }
+
+    .hint {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .keyboard-row {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .key {
+      background-color: #f1f2f6;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      width: 36px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+    }
+
+    .key:hover:not(:disabled) {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .key:disabled {
+      background-color: var(--disabled-color);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
 
-<script>
-(function(){
-  const app = document.getElementById('app');
-  const MAX_WRONG = 5;
+  <div class="game-container">
+    <div class="wordmark"></div>
 
-  const FALL_GAMES = [
-    {
-      word: 'PE POINTS',
-      hint: "Something you probably forgot to log"
-    },
-    {
-      word: 'CLASSROOM',
-      hint: "Always getting updated for some reason"
-    },
-    {
-      word: 'SYLLABUS',
-      hint: "Read mainly during week 1"
-    },
-    {
-      word: 'DISPOSITION',
-      hint: "A sixth grader's only worry"
-    }
-  ];
+    <div class="header">
+      <div class="dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="mistakes">Mistakes: <span id="mistake-count">0</span>/5</div>
+    </div>
 
-  let currentGameIndex = 0;
-  let guessedLetters = new Set();
-  let wrongCount = 0;
-  let gameState = 'PLAYING'; // 'PLAYING', 'WIN', 'LOSE'
+    <div class="stage-container">
+      <img id="stage-img" class="stage-image" src="stage0.png" alt="Hangman Stage">
+    </div>
 
-  function initGame(index) {
-    currentGameIndex = index;
-    guessedLetters.clear();
-    wrongCount = 0;
-    gameState = 'PLAYING';
-    render();
-  }
+    <div id="word-display" class="word-display"></div>
+    <div id="hint-display" class="hint"></div>
 
-  function handleGuess(letter) {
-    if (gameState !== 'PLAYING' || guessedLetters.has(letter)) return;
+    <div class="keyboard" id="keyboard"></div>
+  </div>
 
-    guessedLetters.add(letter);
-    const currentGame = FALL_GAMES[currentGameIndex];
-    
-    if (!currentGame.word.includes(letter)) {
-      wrongCount++;
-      if (wrongCount >= MAX_WRONG) {
-        gameState = 'LOSE';
-      }
-    } else {
-      const isWon = currentGame.word.split('').every(char => char === ' ' || guessedLetters.has(char));
-      if (isWon) {
-        gameState = 'WIN';
-      }
-    }
-    render();
-  }
-
-  function renderHangmanStage(wrongs) {
-    const parts = [
-      '<circle cx="120" cy="65" r="14" stroke="#232838" stroke-width="3.5" fill="none"/>', // Head
-      '<line x1="120" y1="79" x2="120" y2="125" stroke="#232838" stroke-width="3.5"/>', // Body
-      '<line x1="120" y1="92" x2="100" y2="112" stroke="#232838" stroke-width="3.5"/>', // Left Arm
-      '<line x1="120" y1="92" x2="140" y2="112" stroke="#232838" stroke-width="3.5"/>', // Right Arm
-      '<path d="M120 125 L100 155 M120 125 L140 155" stroke="#232838" stroke-width="3.5"/>' // Legs
+  <script>
+    const WORDS = [
+      { word: "CANVAS", hint: "Always getting updated for some reason" },
+      { word: "SYLLABUS", hint: "Unread agreement of the classroom" },
+      { word: "HOMEWORK", hint: "Due at 11:59 PM" }
     ];
 
-    let renderedParts = parts.slice(0, wrongs).join('');
-
-    return `
-      <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 165 H160 M40 165 V20 H120 V48" stroke="#767F92" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        ${renderedParts}
-      </svg>
-    `;
-  }
-
-  function render() {
-    const currentGame = FALL_GAMES[currentGameIndex];
-    const letters = currentGame.word.split('');
-
-    const keyboardRows = [
-      ['Q','W','E','R','T','Y','U','I','O','P'],
-      ['A','S','D','F','G','H','J','K','L'],
-      ['Z','X','C','V','B','N','M']
+    const STAGE_IMAGES = [
+      "stage0.png",
+      "stage1.png",
+      "stage2.png",
+      "stage3.png",
+      "stage4.png",
+      "stage5.png"
     ];
 
-    let livesDots = '';
-    for (let i = 0; i < MAX_WRONG; i++) {
-      livesDots += `<div class="life-dot ${i < wrongCount ? 'used' : ''}"></div>`;
-    }
+    const KEYBOARD_LAYOUT = [
+      ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+      ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+      ["Z", "X", "C", "V", "B", "N", "M"]
+    ];
 
-    let tilesHtml = letters.map(char => {
-      if (char === ' ') {
-        return `<div class="tile gap"></div>`;
-      }
-      const isGuessed = guessedLetters.has(char) || gameState === 'LOSE';
-      return `<div class="tile ${isGuessed ? 'filled' : ''}">${isGuessed ? char : ''}</div>`;
-    }).join('');
+    const MAX_WRONG = 5;
+    let currentWordIndex = 0;
+    let guessedLetters = new Set();
+    let mistakes = 0;
 
-    let keyboardHtml = keyboardRows.map(row => `
-      <div class="kb-row">
-        ${row.map(letter => {
-          const isGuessed = guessedLetters.has(letter);
-          const isCorrect = isGuessed && currentGame.word.includes(letter);
-          const isWrong = isGuessed && !currentGame.word.includes(letter);
-          let classNames = 'key';
-          if (isCorrect) classNames += ' correct';
-          if (isWrong) classNames += ' wrong';
+    const wordDisplay = document.getElementById("word-display");
+    const hintDisplay = document.getElementById("hint-display");
+    const mistakeCount = document.getElementById("mistake-count");
+    const stageImg = document.getElementById("stage-img");
+    const keyboardContainer = document.getElementById("keyboard");
 
-          return `<button class="${classNames}" ${isGuessed || gameState !== 'PLAYING' ? 'disabled' : ''} data-letter="${letter}">${letter}</button>`;
-        }).join('')}
-      </div>
-    `).join('');
-
-    let overlayHtml = '';
-    if (gameState === 'WIN') {
-      overlayHtml = `
-        <div class="overlay win">
-          <h2>Splendid Job!</h2>
-          <p>You solved the word correctly.</p>
-          <div class="btns">
-            ${currentGameIndex < FALL_GAMES.length - 1 ? `<button class="btn btn-primary" id="next-btn">Next Word</button>` : `<button class="btn btn-primary" id="restart-btn">Play Again</button>`}
-          </div>
-        </div>
-      `;
-    } else if (gameState === 'LOSE') {
-      overlayHtml = `
-        <div class="overlay lose">
-          <h2>Nice Try!</h2>
-          <p>The word was <b>${currentGame.word}</b>.</p>
-          <div class="btns">
-            <button class="btn btn-secondary" id="retry-btn">Try Again</button>
-          </div>
-        </div>
-      `;
-    }
-
-    app.innerHTML = `
-      <div class="wordmark">
-        <span><span class="dot"></span>Fall Edition Hangman</span>
-        <span>Word ${currentGameIndex + 1} of ${FALL_GAMES.length}</span>
-      </div>
-      <h1 class="display">School Days</h1>
-      <p class="sub">Test your knowledge on common school life phrases.</p>
-      
-      <div class="card">
-        <div class="play-top">
-          <div class="lives">${livesDots}</div>
-          <div class="mistakes-text">Mistakes: <b>${wrongCount} / ${MAX_WRONG}</b></div>
-        </div>
-
-        <div class="stage-card">
-          ${renderHangmanStage(wrongCount)}
-        </div>
-
-        <div class="tiles">${tilesHtml}</div>
-        <div class="hint-line">"${currentGame.hint}"</div>
-
-        <div class="kb">${keyboardHtml}</div>
-        ${overlayHtml}
-      </div>
-    `;
-
-    // Event Listeners
-    document.querySelectorAll('.key').forEach(btn => {
-      btn.addEventListener('click', () => {
-        handleGuess(btn.getAttribute('data-letter'));
+    function initKeyboard() {
+      keyboardContainer.innerHTML = "";
+      KEYBOARD_LAYOUT.forEach(row => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "keyboard-row";
+        row.forEach(letter => {
+          const btn = document.createElement("button");
+          btn.className = "key";
+          btn.textContent = letter;
+          btn.id = `key-${letter}`;
+          btn.addEventListener("click", () => handleGuess(letter));
+          rowDiv.appendChild(btn);
+        });
+        keyboardContainer.appendChild(rowDiv);
       });
-    });
-
-    const nextBtn = document.getElementById('next-btn');
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => initGame(currentGameIndex + 1));
     }
 
-    const restartBtn = document.getElementById('restart-btn');
-    if (restartBtn) {
-      restartBtn.addEventListener('click', () => initGame(0));
+    function loadWord() {
+      guessedLetters.clear();
+      mistakes = 0;
+      updateDisplay();
+
+      const current = WORDS[currentWordIndex];
+      hintDisplay.textContent = `"${current.hint}"`;
+
+      document.querySelectorAll(".key").forEach(btn => {
+        btn.disabled = false;
+      });
     }
 
-    const retryBtn = document.getElementById('retry-btn');
-    if (retryBtn) {
-      retryBtn.addEventListener('click', () => initGame(currentGameIndex));
-    }
-  }
+    function updateDisplay() {
+      const current = WORDS[currentWordIndex];
+      
+      // Update hidden word representation
+      wordDisplay.textContent = current.word
+        .split("")
+        .map(letter => (guessedLetters.has(letter) ? letter : "_"))
+        .join(" ");
 
-  // Keyboard support
-  window.addEventListener('keydown', (e) => {
-    const key = e.key.toUpperCase();
-    if (/^[A-Z]$/.test(key)) {
-      handleGuess(key);
+      // Update mistake count and image
+      mistakeCount.textContent = mistakes;
+      stageImg.src = STAGE_IMAGES[mistakes] || STAGE_IMAGES[STAGE_IMAGES.length - 1];
     }
-  });
 
-  // Start initial game
-  initGame(0);
-})();
-</script>
+    function handleGuess(letter) {
+      if (guessedLetters.has(letter) || mistakes >= MAX_WRONG) return;
+
+      guessedLetters.add(letter);
+      const btn = document.getElementById(`key-${letter}`);
+      if (btn) btn.disabled = true;
+
+      const current = WORDS[currentWordIndex];
+
+      if (!current.word.includes(letter)) {
+        mistakes++;
+      }
+
+      updateDisplay();
+      checkGameStatus();
+    }
+
+    function loadNextWord() {
+      currentWordIndex = (currentWordIndex + 1) % WORDS.length;
+      loadWord();
+    }
+
+    function checkGameStatus() {
+      const current = WORDS[currentWordIndex];
+      const isWon = current.word.split("").every(letter => guessedLetters.has(letter));
+
+      if (isWon) {
+        setTimeout(() => {
+          alert("Correct!");
+          loadNextWord();
+        }, 300);
+      } else if (mistakes >= MAX_WRONG) {
+        // Automatically advance to the next puzzle on failure
+        setTimeout(() => {
+          loadNextWord();
+        }, 500);
+      }
+    }
+
+    // Initialize Game
+    initKeyboard();
+    loadWord();
+  </script>
 </body>
 </html>
