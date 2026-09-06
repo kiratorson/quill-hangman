@@ -72,7 +72,7 @@
     }
 
     .stage-container {
-      width: 100%;
+      width: 200px;
       height: 200px;
       background-color: #f8f9fa;
       border-radius: 12px;
@@ -84,9 +84,10 @@
     }
 
     .stage-image {
-      max-height: 80%;
-      max-width: 80%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      display: block;
     }
 
     .word-display {
@@ -163,7 +164,7 @@
     </div>
 
     <div class="stage-container">
-      <img id="stage-img" class="stage-image" src="stage0.png" alt="Hangman Stage">
+      <img id="stage-img" class="stage-image" src="Screenshot_2026-09-05_at_6.55.00_PM-removebg-preview.png" alt="Hangman Stage">
     </div>
 
     <div id="word-display" class="word-display"></div>
@@ -180,12 +181,11 @@
     ];
 
     const STAGE_IMAGES = [
-      "stage0.png",
-      "stage1.png",
-      "stage2.png",
-      "stage3.png",
-      "stage4.png",
-      "stage5.png"
+      "Screenshot_2026-09-05_at_6.55.00_PM-removebg-preview.png",
+      "Screenshot_2026-09-05_at_6.55.51_PM-removebg-preview.png",
+      "Screenshot_2026-09-05_at_6.55.14_PM-removebg-preview.png",
+      "Screenshot_2026-09-05_at_7.11.26_PM-removebg-preview.png",
+      "Screenshot_2026-09-05_at_6.54.53_PM-removebg-preview.png"
     ];
 
     const KEYBOARD_LAYOUT = [
@@ -238,13 +238,11 @@
     function updateDisplay() {
       const current = WORDS[currentWordIndex];
       
-      // Update hidden word representation
       wordDisplay.textContent = current.word
         .split("")
         .map(letter => (guessedLetters.has(letter) ? letter : "_"))
         .join(" ");
 
-      // Update mistake count and image
       mistakeCount.textContent = mistakes;
       stageImg.src = STAGE_IMAGES[mistakes] || STAGE_IMAGES[STAGE_IMAGES.length - 1];
     }
@@ -281,14 +279,12 @@
           loadNextWord();
         }, 300);
       } else if (mistakes >= MAX_WRONG) {
-        // Automatically advance to the next puzzle on failure
         setTimeout(() => {
           loadNextWord();
         }, 500);
       }
     }
 
-    // Initialize Game
     initKeyboard();
     loadWord();
   </script>
